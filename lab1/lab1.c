@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
         N = DEFAULT_N;
     double *m1, *m2, x;
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 10; ++i) {
         gettimeofday(&T1, NULL); /* запомнить текущее время T1 */
         m1 = fill_array(N, 1, A);
         m2 = fill_array(N/2, A, 10*A);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
         free(m2);
     }
 
-    printf("N = %zu. Best time (ms): %ld. X = %f.\n", N, minimal_time_ms, x); /* затраченное время */
+    printf("Best time: %ld ms. N = %zu. X = %f.\n", minimal_time_ms, N, x); /* затраченное время */
     return 0;
 }
 
