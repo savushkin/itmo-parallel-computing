@@ -17,16 +17,8 @@ int merge(double *arr1, double *arr2, size_t size2);
 int stupid_sort(double *arr, size_t size);
 
 int main(int argc, char* argv[]) {
-    const IppLibraryVersion *lib;
-//    IppStatus status;
-//    Ipp64u mask, emask;
-    ippSetNumThreads(1);
-
     /* Initialize Intel IPP library */
     ippInit();
-    /* Get Intel IPP library version info */
-    lib = ippGetLibVersion();
-    printf("%s %s\n", lib->Name, lib->Version);
 
     struct timeval T1, T2;
     long time_ms, minimal_time_ms = -1;
@@ -62,6 +54,20 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+int map(double *arr1, size_t size1, double *arr2, size_t size2) {
+    ippsTan_64f_A50(arr1, arr1, size1);
+    ippsInv_64f_A50(arr1, arr1, size1);
+
+//    int x = 0;
+//    for (int i = 0; i < size2; i++) {
+//        arr2[i] = fabs(sin(arr2[i] + x));
+//        x = arr2[i];
+//    }
+
+    return 0;
+}
+
+
 double* fill_array(size_t size, unsigned int min, unsigned int max) {
     double *arr = malloc(sizeof(double) * size);
     unsigned int seed = SEED;
@@ -71,25 +77,6 @@ double* fill_array(size_t size, unsigned int min, unsigned int max) {
         arr[i] = ((double) (rand_r(&seed)%(100*(max-min)))/100) + min;
 
     return arr;
-}
-
-int map(double *arr1, size_t size1, double *arr2, size_t size2) {
-//    double x;
-//    int i;
-    ippsSqrt_64f_I(arr1, size1);
-    ippsTan_64f_A50(arr1, arr1, size1);
-//    for (i = 0; i < size1; i++) {
-//        x = sqrt(arr1[i]);
-//        arr1[i] = (pow(M_E, x) + pow(M_E, -x)) / (pow(M_E, x) - pow(M_E, -x));
-//    }
-//
-//    x = 0;
-//    for (i = 0; i < size2; i++) {
-//        arr2[i] = fabs(sin(arr2[i] + x));
-//        x = arr2[i];
-//    }
-
-    return 0;
 }
 
 double reduce(double *arr, size_t size) {
@@ -107,6 +94,7 @@ double reduce(double *arr, size_t size) {
     }
 
     for (i = 0; i < size; i++) {
+        printf("%f\n", arr[i]);
         if ((int)(arr[i] / min) % 2 == 0) {
             res += sin(arr[i]);
         }
