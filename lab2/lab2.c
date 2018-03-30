@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "ipp.h"
+#include "mkl.h"
 
 #define A 400
 #define SEED 34
@@ -17,9 +17,6 @@ int merge(double *arr1, double *arr2, size_t size2);
 int stupid_sort(double *arr, size_t size);
 
 int main(int argc, char* argv[]) {
-    /* Initialize Intel IPP library */
-    ippInit();
-
     struct timeval T1, T2;
     long time_ms, minimal_time_ms = -1;
     size_t N;
@@ -27,11 +24,13 @@ int main(int argc, char* argv[]) {
         N = (size_t) atoi(argv[1]); /* инициализировать число N первым параметром командной строки */
     else
         N = DEFAULT_N;
-    if(argc > 2)
-        ippSetNumThreads(atoi(argv[2]));
-    else
-        ippSetNumThreads(DEFAULT_M);
-
+    if(argc > 2) {
+        mkl_set_num_threads(atoi(argv[2]));
+    } else {
+        mkl_set_num_threads(DEFAULT_M);
+    }
+    mkl_set_dynamic( 0 );
+    printf("%d thread\n", mkl_get_max_threads());
     double *m1, *m2, x;
 
     for (int i = 0; i < 10; ++i) {
@@ -54,20 +53,6 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-int map(double *arr1, size_t size1, double *arr2, size_t size2) {
-    ippsTan_64f_A50(arr1, arr1, size1);
-    ippsInv_64f_A50(arr1, arr1, size1);
-
-//    int x = 0;
-//    for (int i = 0; i < size2; i++) {
-//        arr2[i] = fabs(sin(arr2[i] + x));
-//        x = arr2[i];
-//    }
-
-    return 0;
-}
-
-
 double* fill_array(size_t size, unsigned int min, unsigned int max) {
     double *arr = malloc(sizeof(double) * size);
     unsigned int seed = SEED;
@@ -77,6 +62,22 @@ double* fill_array(size_t size, unsigned int min, unsigned int max) {
         arr[i] = ((double) (rand_r(&seed)%(100*(max-min)))/100) + min;
 
     return arr;
+}
+
+int map(double *arr1, size_t size1, double *arr2, size_t size2) {
+    double x = 0;
+    int i = 0;
+
+    vdSqrt(size1, arr1, arr1);
+    vdTanh(size1, arr1, arr1);
+    vdInv(size1, arr1, arr1);
+
+    for (i = 0; i < size2; i++) {
+        arr2[i] = fabs(sin(arr2[i] + x));
+        x = arr2[i];
+    }
+
+    return 0;
 }
 
 double reduce(double *arr, size_t size) {
@@ -94,7 +95,6 @@ double reduce(double *arr, size_t size) {
     }
 
     for (i = 0; i < size; i++) {
-        printf("%f\n", arr[i]);
         if ((int)(arr[i] / min) % 2 == 0) {
             res += sin(arr[i]);
         }
@@ -104,12 +104,7 @@ double reduce(double *arr, size_t size) {
 }
 
 int merge(double *arr1, double *arr2, size_t size2) {
-    int i;
-
-    for (i = 0; i < size2; i++) {
-        arr2[i] = pow(arr1[i], arr2[i]);
-    }
-
+    vdPow(size2, arr1, arr2, arr2);
     return 0;
 }
 
