@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "mkl.h"
+#include <fcntl.h>
+#include "lib/FW_1.3.1_Lin64/fwBase.h"
+#include "lib/FW_1.3.1_Lin64/fwSignal.h"
 
 #define A 400
 #define SEED 34
@@ -25,12 +27,10 @@ int main(int argc, char* argv[]) {
     else
         N = DEFAULT_N;
     if(argc > 2) {
-        mkl_set_num_threads(atoi(argv[2]));
+        fwSetNumThreads(atoi(argv[2]));
     } else {
-        mkl_set_num_threads(DEFAULT_M);
+        fwSetNumThreads(DEFAULT_M);
     }
-    mkl_set_dynamic( 0 );
-    printf("%d thread\n", mkl_get_max_threads());
     double *m1, *m2, x;
 
     for (int i = 0; i < 10; ++i) {
@@ -68,9 +68,9 @@ int map(double *arr1, size_t size1, double *arr2, size_t size2) {
     double x = 0;
     int i = 0;
 
-    vdSqrt(size1, arr1, arr1);
-    vdTanh(size1, arr1, arr1);
-    vdInv(size1, arr1, arr1);
+    fwsSqrt_64f(arr1, arr1, size1);
+    fwsTanh_64f_A50(arr1, arr1, size1);
+    fwsInv_64f_A50(arr1, arr1, size1);
 
     for (i = 0; i < size2; i++) {
         arr2[i] = fabs(sin(arr2[i] + x));
@@ -104,7 +104,7 @@ double reduce(double *arr, size_t size) {
 }
 
 int merge(double *arr1, double *arr2, size_t size2) {
-    vdPow(size2, arr1, arr2, arr2);
+    fwsPow_64f_A50(arr1, arr2, arr2, size2);
     return 0;
 }
 
