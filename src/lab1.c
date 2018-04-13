@@ -7,7 +7,7 @@
 #define SEED 34
 #define DEFAULT_N 20
 
-double* fill_array(size_t size, unsigned int min, unsigned int max);
+double* fill_array(double *arr, size_t size, unsigned int min, unsigned int max);
 int map(double *arr1, size_t size1, double *arr2, size_t size2);
 double reduce(double *arr, size_t size);
 int merge(double *arr1, double *arr2, size_t size2);
@@ -21,12 +21,12 @@ int main(int argc, char* argv[]) {
         N = (size_t) atoi(argv[1]); /* инициализировать число N первым параметром командной строки */
     else
         N = DEFAULT_N;
-    double *m1, *m2, x;
+    double x, *m1 = malloc(sizeof(double) * N), *m2 = malloc(sizeof(double) * (N / 2));
 
     for (int i = 0; i < 10; ++i) {
         gettimeofday(&T1, NULL); /* запомнить текущее время T1 */
-        m1 = fill_array(N, 1, A);
-        m2 = fill_array(N/2, A, 10*A);
+        fill_array(m1, N, 0, A);
+        fill_array(m2, N/2, A, 10*A);
         map(m1, N, m2, N/2);
         merge(m1, m2, N/2);
         stupid_sort(m2, N/2);
@@ -35,16 +35,16 @@ int main(int argc, char* argv[]) {
         time_ms = 1000 * (T2.tv_sec - T1.tv_sec) + (T2.tv_usec - T1.tv_usec) / 1000;
         if ((minimal_time_ms == -1) || (time_ms < minimal_time_ms))
             minimal_time_ms = time_ms;
-        free(m1);
-        free(m2);
     }
 
-    printf("Best time: %ld ms. N = %zu. X = %f.\n", minimal_time_ms, N, x); /* затраченное время */
+    free(m1);
+    free(m2);
+
+    printf("Best time: %ld ms; N = %zu; X = %f\n", minimal_time_ms, N, x); /* затраченное время */
     return 0;
 }
 
-double* fill_array(size_t size, unsigned int min, unsigned int max) {
-    double *arr = malloc(sizeof(double) * size);
+double* fill_array(double *arr, size_t size, unsigned int min, unsigned int max) {
     unsigned int seed = SEED;
     int i;
 
@@ -59,8 +59,7 @@ int map(double *arr1, size_t size1, double *arr2, size_t size2) {
     int i;
 
     for (i = 0; i < size1; i++) {
-        x = sqrt(arr1[i]);
-        arr1[i] = (pow(M_E, x) + pow(M_E, -x)) / (pow(M_E, x) - pow(M_E, -x));
+        arr1[i] = (pow(M_E, arr1[i]) + pow(M_E, -arr1[i])) / (pow(M_E, arr1[i]) - pow(M_E, -arr1[i])) + 1;
     }
 
     x = 0;

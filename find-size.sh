@@ -17,7 +17,7 @@ do
     COUNT=$(expr ${COUNT} + ${STEP})
     CURRENT_TIME=`${BINARY} ${COUNT} | awk '{print $3}'`
 
-    if [ ${CURRENT_TIME} -gt ${TIME} ]
+    if [ ${CURRENT_TIME} -ge ${TIME} ]
     then
     echo ${COUNT}
     break

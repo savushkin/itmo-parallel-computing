@@ -4,8 +4,8 @@
 #include <math.h>
 
 #include <fcntl.h>
-#include "lib/FW_1.3.1_Lin64/fwBase.h"
-#include "lib/FW_1.3.1_Lin64/fwSignal.h"
+#include "../lib/FW_1.3.1_Lin64/fwBase.h"
+#include "../lib/FW_1.3.1_Lin64/fwSignal.h"
 
 #define A 400
 #define SEED 34
