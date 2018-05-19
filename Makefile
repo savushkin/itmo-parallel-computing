@@ -1,15 +1,17 @@
 CC=gcc
-CFLAGS=-Wall -Werror -O3 -std=gnu99 -m64
+CFLAGS=-O3 -std=gnu99 -m64
 
 LAB1_LDFLAGS=-lm
 LAB2_LDFLAGS=-lm -Llib/FW_1.3.1_Lin64/lib  -lfwBase -lfwImage -lfwJPEG -lfwSignal -lfwVideo
 LAB3_LDFLAGS=-lm
+LAB4_LDFLAGS=-lm
 
 SOURCE_LAB1=./src/lab1.c
 SOURCE_LAB2=./src/lab2.c
 SOURCE_LAB3=./src/lab3.c
+SOURCE_LAB4=./src/lab4.c
 
-all: clean lab_seq lab1-parallel-2 lab1-parallel-4 lab1-parallel-5 lab1-parallel-8 lab2-parallel lab3-parallel-static-1-1 lab3-parallel-static-1-2 lab3-parallel-static-1-4 lab3-parallel-static-100-1 lab3-parallel-static-100-2 lab3-parallel-static-100-4 lab3-parallel-dynamic-1-1 lab3-parallel-dynamic-1-2 lab3-parallel-dynamic-1-4 lab3-parallel-dynamic-100-1 lab3-parallel-dynamic-100-2 lab3-parallel-dynamic-100-4 lab3-parallel-guided-1-1 lab3-parallel-guided-1-2 lab3-parallel-guided-1-4
+all: clean lab_seq lab1-parallel-2 lab1-parallel-4 lab1-parallel-5 lab1-parallel-8 lab2-parallel lab3-parallel-static-1-1 lab3-parallel-static-1-2 lab3-parallel-static-1-4 lab3-parallel-static-100-1 lab3-parallel-static-100-2 lab3-parallel-static-100-4 lab3-parallel-dynamic-1-1 lab3-parallel-dynamic-1-2 lab3-parallel-dynamic-1-4 lab3-parallel-dynamic-100-1 lab3-parallel-dynamic-100-2 lab3-parallel-dynamic-100-4 lab3-parallel-guided-1-1 lab3-parallel-guided-1-2 lab3-parallel-guided-1-4 lab4-seq lab4-parallel-static lab4-parallel-dynamic lab4-parallel-guided
 
 lab_seq: $(SOURCE_LAB1)
 	$(CC) $(CFLAGS) $(SOURCE_LAB1) $(LAB1_LDFLAGS) -o ./bin/lab1-seq
@@ -73,6 +75,18 @@ lab3-parallel-guided-1-2: $(SOURCE_LAB3)
 
 lab3-parallel-guided-1-4: $(SOURCE_LAB3)
 	$(CC) $(CFLAGS) -fopenmp -DCHUNK=1 -DTHREADS=1 -DSCHEDULE=guided $(SOURCE_LAB3) $(LAB3_LDFLAGS) -o ./bin/lab3-par-guided-1-4
+
+lab4-seq: $(SOURCE_LAB4)
+	$(CC) $(CFLAGS) $(SOURCE_LAB4) $(LAB4_LDFLAGS) -o ./bin/lab4-seq
+
+lab4-parallel-guided: $(SOURCE_LAB4)
+	$(CC) $(CFLAGS) -fopenmp -DCHUNK=1 -DSCHEDULE=guided $(SOURCE_LAB4) $(LAB4_LDFLAGS) -o ./bin/lab4-par-guided
+
+lab4-parallel-dynamic: $(SOURCE_LAB4)
+	$(CC) $(CFLAGS) -fopenmp -DCHUNK=20 -DSCHEDULE=dynamic $(SOURCE_LAB4) $(LAB4_LDFLAGS) -o ./bin/lab4-par-dynamic
+
+lab4-parallel-static: $(SOURCE_LAB4)
+	$(CC) $(CFLAGS) -fopenmp -DCHUNK=20 -DSCHEDULE=static $(SOURCE_LAB4) $(LAB4_LDFLAGS) -o ./bin/lab4-par-static
 
 clean:
 	rm -rf ./bin/*
