@@ -7,6 +7,11 @@
 #ifdef _OPENMP
 #include <omp.h>
 #else
+int omp_get_max_threads()
+{
+    return 1;
+}
+
 int omp_get_num_procs()
 {
     return 1;
@@ -14,7 +19,7 @@ int omp_get_num_procs()
 
 int omp_get_thread_num()
 {
-    return 1;
+    return 0;
 }
 
 void omp_set_num_threads(int thrds)
@@ -47,7 +52,8 @@ int map(double *arr1, size_t size1, double *arr2, size_t size2);
 double reduce(double *arr, size_t size);
 int merge(double *arr1, double *arr2, size_t size2);
 int stupid_sort(double *arr, size_t from, size_t to);
-void sort(double **array, size_t n);
+void sort(double **array, size_t size);
+void compare_time(double start_time, double end_time, double* min_time);
 
 int main(int argc, char* argv[]) {
     size_t N;
@@ -60,7 +66,15 @@ int main(int argc, char* argv[]) {
         omp_set_num_threads(atoi(argv[2]));
     else
         omp_set_num_threads(DEFAULT_M);
-    double x, *m1 = malloc(sizeof(double) * N), *m2 = malloc(sizeof(double) * (N / 2)), t1, t2, time_ms, minimal_time_ms = -1.0;
+    double x, *m1 = malloc(sizeof(double) * N), *m2 = malloc(sizeof(double) * (N / 2)),
+            t1, t2, minimal_time_ms = -1.0,
+            step_t1, step_t2,
+            minimal_generate_time = -1.0,
+            minimal_map_time = -1.0,
+            minimal_merge_time = -1.0,
+            minimal_sort_time = -1.0,
+            minimal_reduce_time = -1.0;
+
     int i, max_iterarions = 10;
     omp_set_nested(1);
     #pragma omp parallel shared(i, max_iterarions)
@@ -70,35 +84,63 @@ int main(int argc, char* argv[]) {
         {
             for (i = 0; i < max_iterarions; ++i) {
                 t1 = omp_get_wtime();
+                step_t1 = omp_get_wtime();
                 fill_array(m1, N, 0, A, i);
                 fill_array(m2, N/2, A, 10*A, i);
+                step_t2 = omp_get_wtime();
+                compare_time(step_t1, step_t2, &minimal_generate_time);
+
+                step_t1 = omp_get_wtime();
                 map(m1, N, m2, N/2);
+                step_t2 = omp_get_wtime();
+                compare_time(step_t1, step_t2, &minimal_map_time);
+
+                step_t1 = omp_get_wtime();
                 merge(m1, m2, N/2);
+                step_t2 = omp_get_wtime();
+                compare_time(step_t1, step_t2, &minimal_merge_time);
+
+
+                step_t1 = omp_get_wtime();
                 sort(&m2, N/2);
+                step_t2 = omp_get_wtime();
+                compare_time(step_t1, step_t2, &minimal_sort_time);
+
+                step_t1 = omp_get_wtime();
                 x = reduce(m2, N/2);
+                step_t2 = omp_get_wtime();
+                compare_time(step_t1, step_t2, &minimal_reduce_time);
+
                 t2 = omp_get_wtime();
-                time_ms = 1000 * (t2 - t1);
-                if ((minimal_time_ms == -1.0) || (time_ms < minimal_time_ms))
-                    minimal_time_ms = time_ms;
+                compare_time(t1, t2, &minimal_time_ms);
             }
         }
 
-        #pragma omp section
-        {
-            printf("Task is completed for:\n0  %%");
-            while (i < max_iterarions) {
-                printf("%c[2K\r%2.0f %%", 27, (max_iterarions/100.0)*(i+1)*100.0);
-                fflush(stdout);
-                usleep(800);
-            }
-            printf("\n");
-        }
+//        #pragma omp section
+//        {
+//            printf("Task is completed for:\n0  %%");
+//            while (i < max_iterarions) {
+//                printf("%c[2K\r%2.0f %%", 27, (max_iterarions/100.0)*(i+1)*100.0);
+//                fflush(stdout);
+//                usleep(800);
+//            }
+//            printf("\n");
+//        }
     }
 
     free(m1);
     free(m2);
 
-    printf("Best time: %f ms; N = %zu; X = %f\n", minimal_time_ms, N, x); /* затраченное время */
+    printf("Best time: %f ms; N = %zu; X = %f ; threads: %d; generate: %f ms; map: %f ms; merge: %f ms; sort: %f ms; reduce: %f ms\n",
+           minimal_time_ms,
+           N,
+           x,
+           omp_get_max_threads(),
+           minimal_generate_time,
+           minimal_map_time,
+           minimal_merge_time,
+           minimal_sort_time,
+           minimal_reduce_time); /* затраченное время */
     return 0;
 }
 
@@ -134,16 +176,13 @@ int map(double *arr1, size_t size1, double *arr2, size_t size2) {
 }
 
 double reduce(double *arr, size_t size) {
-    double res = 0, min;
+    double res = 0, min = arr[0];
     int i = 0;
 
-    if (size > 0)
-        min = arr[0];
-    else
-        min = 0;
     for (i = 0; i < size; i++) {
-        if (arr[i] < min && arr[i] != 0) {
+        if (arr[i] != 0) {
             min = arr[i];
+            break;
         }
     }
 
@@ -207,23 +246,28 @@ int stupid_sort(double *arr, size_t from, size_t to) {
     return 0;
 }
 
-void sort(double **array, size_t n)
+void sort(double **array, size_t size)
 {
-    int num, a, b;
-    int num_procs = omp_get_num_procs();
-    int curr_chunk = n % num_procs ? n / num_procs + 1 : n / num_procs;
+    int from, to;
+    int count_threads = omp_get_max_threads();
+    int curr_chunk = size % count_threads ? size / count_threads + 1 : size / count_threads;
     unsigned int i;
-    double *array_new = malloc(sizeof(double) * n);
+    double *array_new = malloc(sizeof(double) * size);
 
-    #pragma omp parallel for default(none) shared(array, n, curr_chunk, num_procs) private(i, num, a, b) schedule(SCHEDULE, CHUNK)
-    for (i = 0; i < num_procs; i++) {
-        num = omp_get_thread_num();
-        a = num * curr_chunk;
-        b = num * curr_chunk  + curr_chunk - 1;
-        stupid_sort(*array, a < n - 1 ? a : n - 1, b < n - 1 ? b : n - 1);
+#pragma omp parallel for default(none) shared(array, size, curr_chunk, count_threads) private(i, from, to) schedule(SCHEDULE, CHUNK)
+    for (i = 0; i < count_threads; i++) {
+        from = i * curr_chunk;
+        to = i * curr_chunk  + curr_chunk - 1;
+        stupid_sort(*array, from < size - 1 ? from : size - 1, to < size - 1 ? to : size - 1);
     }
 
-    merge_arrays(*array, array_new, n, num_procs, curr_chunk);
+    merge_arrays(*array, array_new, size, count_threads, curr_chunk);
     free(*array);
     *array = array_new;
+}
+
+void compare_time(double start_time, double end_time, double* min_time) {
+    double step_time = 1000 * (end_time - start_time);
+    if ((*min_time == -1.0) || (step_time < *min_time))
+        *min_time = step_time;
 }
