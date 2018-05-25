@@ -12,7 +12,7 @@ echo "DELTA = ${DELTA}"
 # from, to, delta, bin, csv, thread
 function write_csv() {
     I=$1
-    echo "N,TIME,X">./csv/$5
+    echo "N,TIME,X,GENERATE,MAP,MERGE,SORT,REDUCE">./csv/$5
     while([ ${I} -le $2 ])
     do
         echo "./bin/$4 ${I} ${6}"
@@ -20,7 +20,12 @@ function write_csv() {
         echo "${RESULT}"
         TIME=`echo ${RESULT} | awk '{print $3}'`
         X=`echo ${RESULT} | awk '{print $10}'`
-        echo "$I,$TIME,$X" >> ./csv/$5
+        GENERATE=`echo ${RESULT} | awk '{print $15}'`
+        MAP=`echo ${RESULT} | awk '{print $18}'`
+        MERGE=`echo ${RESULT} | awk '{print $21}'`
+        SORT=`echo ${RESULT} | awk '{print $24}'`
+        REDUCE=`echo ${RESULT} | awk '{print $27}'`
+        echo "$I,$TIME,$X,$GENERATE,$MAP,$MERGE,$SORT,$REDUCE" >> ./csv/$5
         I=$(expr ${I} + $3)
     done;
 }
@@ -30,12 +35,12 @@ function write_csv() {
 #write_csv ${N1} ${N2} ${DELTA} lab1-par-4 lab1-par-4.csv
 #write_csv ${N1} ${N2} ${DELTA} lab1-par-5 lab1-par-5.csv
 #write_csv ${N1} ${N2} ${DELTA} lab1-par-8 lab1-par-8.csv
-#
+
 #write_csv ${N1} ${N2} ${DELTA} lab2-par lab2-par-2.csv 1
 #write_csv ${N1} ${N2} ${DELTA} lab2-par lab2-par-2.csv 2
 #write_csv ${N1} ${N2} ${DELTA} lab2-par lab2-par-4.csv 4
 #write_csv ${N1} ${N2} ${DELTA} lab2-par lab2-par-5.csv 5
-#
+
 #write_csv ${N1} ${N2} ${DELTA} lab3-par-static-1-1 lab3-par-static-1-1.csv
 #write_csv ${N1} ${N2} ${DELTA} lab3-par-static-1-2 lab3-par-static-1-2.csv
 #write_csv ${N1} ${N2} ${DELTA} lab3-par-static-1-4 lab3-par-static-1-4.csv
@@ -55,7 +60,10 @@ function write_csv() {
 write_csv ${N1} ${N2} ${DELTA} lab4-seq lab4-seq.csv
 write_csv ${N1} ${N2} ${DELTA} lab4-par-guided lab4-par-guided-2.csv 2
 write_csv ${N1} ${N2} ${DELTA} lab4-par-guided lab4-par-guided-4.csv 4
-#write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-2.csv 2
-#write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-4.csv 4
-#write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-2.csv 2
-#write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-4.csv 4
+write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-2.csv 2
+write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-4.csv 4
+write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-2.csv 2
+write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-4.csv 4
+
+write_csv ${N1} ${N2} ${DELTA} lab5-par-static lab5-par-static-2.csv 2
+write_csv ${N1} ${N2} ${DELTA} lab5-par-static lab5-par-static-4.csv 4
