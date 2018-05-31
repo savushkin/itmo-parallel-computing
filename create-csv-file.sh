@@ -57,13 +57,16 @@ function write_csv() {
 #write_csv ${N1} ${N2} ${DELTA} lab3-par-guided-1-2 lab3-par-guided-1-2.csv
 #write_csv ${N1} ${N2} ${DELTA} lab3-par-guided-1-4 lab3-par-guided-1-4.csv
 
-write_csv ${N1} ${N2} ${DELTA} lab4-seq lab4-seq.csv
-write_csv ${N1} ${N2} ${DELTA} lab4-par-guided lab4-par-guided-2.csv 2
-write_csv ${N1} ${N2} ${DELTA} lab4-par-guided lab4-par-guided-4.csv 4
-write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-2.csv 2
-write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-4.csv 4
-write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-2.csv 2
-write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-4.csv 4
+#write_csv ${N1} ${N2} ${DELTA} lab4-seq lab4-seq.csv
+#write_csv ${N1} ${N2} ${DELTA} lab4-par-guided lab4-par-guided-2.csv 2
+#write_csv ${N1} ${N2} ${DELTA} lab4-par-guided lab4-par-guided-4.csv 4
+#write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-2.csv 2
+#write_csv ${N1} ${N2} ${DELTA} lab4-par-static lab4-par-static-4.csv 4
+#write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-2.csv 2
+#write_csv ${N1} ${N2} ${DELTA} lab4-par-dynamic lab4-par-dynamic-4.csv 4
 
-write_csv ${N1} ${N2} ${DELTA} lab5-par-static lab5-par-static-2.csv 2
-write_csv ${N1} ${N2} ${DELTA} lab5-par-static lab5-par-static-4.csv 4
+#write_csv ${N1} ${N2} ${DELTA} lab5-par-static lab5-par-static-2.csv 2
+#write_csv ${N1} ${N2} ${DELTA} lab5-par-static lab5-par-static-4.csv 4
+
+write_csv ${N1} ${N2} ${DELTA} lab6-par-static lab6-par-static-2.csv 2
+write_csv ${N1} ${N2} ${DELTA} lab6-par-static lab6-par-static-4.csv 4
